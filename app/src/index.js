@@ -253,7 +253,7 @@ function recordStep2(){
 module.exports.startRecord = () => {
   console.log('startRecord()');
   if (!socket){
-    socket = new WebSocket(`wss://${window.location.hostname}:3000`);
+    socket = new WebSocket('wss://binaural.me/msstream');
     socket.addEventListener('open', handleSocketOpen);
     socket.addEventListener('message', handleSocketMessage);
     socket.addEventListener('error', handleSocketError);
