@@ -9,7 +9,7 @@ const mediasoupConfig = require('../../server/src/config');
 let peer;
 const queue = new SocketQueue();
 
-const socket = new WebSocket(`wss://${window.location.hostname}:3000`);
+let socket
 
 const handleSocketOpen = async () => {
   console.log('handleSocketOpen()');
@@ -119,7 +119,9 @@ const handleCreateTransportRequest = async (jsonMessage) => {
 
     // Set the transport listeners and get the users media stream
     handleSendTransportListeners();
-    getMediaStream();
+    getMediaStream().then(()=>{
+      recordStep2();
+    });
   } catch (error) {
     console.error('handleCreateTransportRequest() failed to create transport [error:%o]', error);
     socket.close();
@@ -137,7 +139,7 @@ const handleSendTransportListeners = () => {
 const getMediaStream = async () => {
   const mediaStream = await GUM();
   const videoNode = document.getElementById('localVideo');
-  videoNode.srcObject = mediaStream;
+  if(videoNode){ videoNode.srcObject = mediaStream; }
 
   // Get the video and audio tracks from the media stream
   const videoTrack = mediaStream.getVideoTracks()[0];
@@ -236,21 +238,29 @@ const handleTransportProduceEvent = ({ kind, rtpParameters }, callback, errback)
   }
 };
 
-socket.addEventListener('open', handleSocketOpen);
-socket.addEventListener('message', handleSocketMessage);
-socket.addEventListener('error', handleSocketError);
-socket.addEventListener('close', handleSocketClose);
-
-module.exports.startRecord = () => {
-  console.log('startRecord()');
-
+function recordStep2(){
+  const screenId = document.getElementById('screenIdInput').value;
+  console.log(`screenId: ${screenId}`)
   socket.send(JSON.stringify({
     action: 'start-record',
     sessionId: peer.sessionId,
+    screenId
   }));
 
   document.getElementById('startRecordButton').disabled = true;
-  document.getElementById('stopRecordButton').disabled = false;
+  document.getElementById('stopRecordButton').disabled = false;  
+}
+module.exports.startRecord = () => {
+  console.log('startRecord()');
+  if (!socket){
+    socket = new WebSocket(`wss://${window.location.hostname}:3000`);
+    socket.addEventListener('open', handleSocketOpen);
+    socket.addEventListener('message', handleSocketMessage);
+    socket.addEventListener('error', handleSocketError);
+    socket.addEventListener('close', handleSocketClose);  
+  }else{
+    recordStep2()
+  }
 };
 
 module.exports.stopRecord = () => {

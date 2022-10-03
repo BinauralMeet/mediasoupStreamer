@@ -175,7 +175,10 @@ const handleStartRecordRequest = async (jsonMessage) => {
     throw new Error(`Peer with id ${jsonMessage.sessionId} was not found`);
   }
 
-  startRecord(peer);
+  const screenId = jsonMessage.screenId;
+  console.log(`screenId = ${screenId}`)
+
+  startRecord(peer, screenId);
 };
 
 const handleStopRecordRequest = async (jsonMessage) => {
@@ -203,7 +206,7 @@ const publishProducerRtpStream = async (peer, producer, ffmpegRtpCapabilities) =
   console.log('publishProducerRtpStream()');
 
   // Create the mediasoup RTP Transport used to send media to the GStreamer process
-  const rtpTransportConfig = config.plainRtpTransport;
+  const rtpTransportConfig = config.plainTransport;
 
   // If the process is set to GStreamer set rtcpMux to false
   if (PROCESS_NAME === 'GStreamer') {
@@ -264,14 +267,14 @@ const publishProducerRtpStream = async (peer, producer, ffmpegRtpCapabilities) =
   };
 };
 
-const startRecord = async (peer) => {
+const startRecord = async (peer, screenId) => {
   let recordInfo = {};
 
   for (const producer of peer.producers) {
     recordInfo[producer.kind] = await publishProducerRtpStream(peer, producer);
   }
 
-  recordInfo.fileName = Date.now().toString();
+  recordInfo.fileName = screenId;//Date.now().toString();
 
   peer.process = getProcess(recordInfo);
 
@@ -301,7 +304,6 @@ const getProcess = (recordInfo) => {
     console.log('starting server [processName:%s]', PROCESS_NAME);
     await initializeWorkers();
     router = await createRouter();
-
     httpsServer.listen(SERVER_PORT, () =>
       console.log('Socket Server listening on port %d', SERVER_PORT)
     );

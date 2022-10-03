@@ -6,10 +6,10 @@
   </head>
 
   <body>
-    <video id="localVideo" autoplay muted playsinline width="640" height="480"></video>
+    Screen ID: <input id="screenIdInput" value="1" size="40">
     <br/>
-    <button id="startRecordButton" onclick="Lib.startRecord()" disabled>Start Record</button>
-    <button id="stopRecordButton" onclick="Lib.stopRecord()" disabled>Stop Record</button>
+    <button id="startRecordButton" onclick="Lib.startRecord()">Start Streaming</button>
+    <button id="stopRecordButton" onclick="Lib.stopRecord()" disabled>Stop Streaming</button>
   </body>
 
   <script>

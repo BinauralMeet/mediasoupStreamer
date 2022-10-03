@@ -44,7 +44,7 @@ module.exports.createTransport = async (transportType, router, options) => {
     case 'webRtc':
       return await router.createWebRtcTransport(config.webRtcTransport);
     case 'plain':
-      return await router.createPlainRtpTransport(config.plainRtpTransport);
+      return await router.createPlainTransport(config.plainTransport);
   }
 };
 

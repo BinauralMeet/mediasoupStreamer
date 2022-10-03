@@ -69,10 +69,11 @@ module.exports = class FFmpeg {
 
   get _commandArgs () {
     let commandArgs = [
+      '-re',
       '-loglevel',
       'debug',
       '-protocol_whitelist',
-      'pipe,udp,rtp',
+      'pipe,udp,rtp,rtmp',
       '-fflags',
       '+genpts',
       '-f',
@@ -81,15 +82,18 @@ module.exports = class FFmpeg {
       'pipe:0'
     ];
 
-    commandArgs = commandArgs.concat(this._videoArgs);
-    commandArgs = commandArgs.concat(this._audioArgs);
+    //commandArgs = commandArgs.concat(this._videoArgs);
+    //commandArgs = commandArgs.concat(this._audioArgs);
 
     commandArgs = commandArgs.concat([
       /*
       '-flags',
       '+global_header',
       */
-      `${RECORD_FILE_LOCATION_PATH}/${this._rtpParameters.fileName}.webm`
+      //hase//  `${RECORD_FILE_LOCATION_PATH}/${this._rtpParameters.fileName}.webm`
+      '-c:v', 'libx264', '-c:a', 'aac',
+      '-f', 'flv',
+      `rtmp://localhost/${this._rtpParameters.fileName}`
     ]);
 
     console.log('commandArgs:%o', commandArgs);

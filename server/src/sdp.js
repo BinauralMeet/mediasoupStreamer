@@ -8,7 +8,7 @@ module.exports.createSdpText = (rtpParameters) => {
   const videoCodecInfo = getCodecInfoFromRtpParameters('video', video.rtpParameters);
 
   // Audio codec info
-  const audioCodecInfo = getCodecInfoFromRtpParameters('audio', audio.rtpParameters);
+  const audioCodecInfo = audio ? getCodecInfoFromRtpParameters('audio', audio.rtpParameters): undefined;
 
   return `v=0
   o=- 0 0 IN IP4 127.0.0.1
@@ -18,6 +18,8 @@ module.exports.createSdpText = (rtpParameters) => {
   m=video ${video.remoteRtpPort} RTP/AVP ${videoCodecInfo.payloadType} 
   a=rtpmap:${videoCodecInfo.payloadType} ${videoCodecInfo.codecName}/${videoCodecInfo.clockRate}
   a=sendonly
+`
+  audio && `
   m=audio ${audio.remoteRtpPort} RTP/AVP ${audioCodecInfo.payloadType} 
   a=rtpmap:${audioCodecInfo.payloadType} ${audioCodecInfo.codecName}/${audioCodecInfo.clockRate}/${audioCodecInfo.channels}
   a=sendonly
