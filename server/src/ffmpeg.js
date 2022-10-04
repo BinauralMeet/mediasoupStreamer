@@ -69,9 +69,9 @@ module.exports = class FFmpeg {
 
   get _commandArgs () {
     let commandArgs = [
-      '-re',
-      '-loglevel',
-      'debug',
+      //'-re',
+      //'-loglevel',
+      //'debug',
       '-protocol_whitelist',
       'pipe,udp,rtp,rtmp,rtsp',
       '-fflags',
@@ -86,16 +86,19 @@ module.exports = class FFmpeg {
     //commandArgs = commandArgs.concat(this._audioArgs);
 
     commandArgs = commandArgs.concat([
-      /*
       '-flags',
       '+global_header',
-      */
       //hase//  `${RECORD_FILE_LOCATION_PATH}/${this._rtpParameters.fileName}.webm`
-      //'-c:v', 'libx264', 
-      //'-c:a', 'aac',
-      '-vcodec', 'copy', 
-      '-acodec', 'copy', 
-      //'-f', 'flv',
+//	'-c:v', 'libx264',
+//	'-x264-params', 'keyint=90:scenecut=0',
+//	'-c:a', 'aac',
+//	'-b:v', '1.3M',
+//	'-maxrate', '1.3M',
+//	'-bufsize', '0.2M',
+	'-vcodec', 'copy',
+	'-acodec', 'copy',
+//      '-f', 'flv',
+//      `rtmp://localhost/${this._rtpParameters.fileName}`
       '-f', 'rtsp',
       `rtsp://localhost/${this._rtpParameters.fileName}`
     ]);

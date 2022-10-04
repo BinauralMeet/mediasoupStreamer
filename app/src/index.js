@@ -147,7 +147,9 @@ const getMediaStream = async () => {
 
   // If there is a video track start sending it to the server
   if (videoTrack) {
-    const videoProducer = await peer.sendTransport.produce({ track: videoTrack });
+    const videoProducer = await peer.sendTransport.produce({ track: videoTrack,
+      encodings: [{maxBitrate:1500000}]
+     });
     peer.producers.push(videoProducer);
   }
 
@@ -253,8 +255,8 @@ function recordStep2(){
 module.exports.startRecord = () => {
   console.log('startRecord()');
   if (!socket){
-    //socket = new WebSocket('wss://binaural.me/msstream');
-    socket = new WebSocket('ws://localhost:3030');
+    socket = new WebSocket('wss://binaural.me/msstream');
+    //socket = new WebSocket('ws://localhost:3030');
     socket.addEventListener('open', handleSocketOpen);
     socket.addEventListener('message', handleSocketMessage);
     socket.addEventListener('error', handleSocketError);
