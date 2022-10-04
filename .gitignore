@@ -1,3 +1,4 @@
 app/node_modules
+app/dist/main.js
 server/node_modules
 server/files
