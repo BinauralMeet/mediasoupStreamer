@@ -255,7 +255,7 @@ function recordStep2(){
 module.exports.startRecord = () => {
   console.log('startRecord()');
   if (!socket){
-    socket = new WebSocket('wss://binaural.me/msstream');
+    socket = new WebSocket('wss://vrc.jp/msstreamer');
     //socket = new WebSocket('ws://localhost:3030');
     socket.addEventListener('open', handleSocketOpen);
     socket.addEventListener('message', handleSocketMessage);

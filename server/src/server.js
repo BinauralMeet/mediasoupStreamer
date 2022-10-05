@@ -29,9 +29,13 @@ const wss = new WebSocket.Server({ server: httpServer });
 const peers = new Map();
 
 let router;
-
+let pingInterval;
 wss.on('connection', async (socket, request) => {
   console.log('new socket connection [ip%s]', request.headers['x-forwared-for'] || request.headers.origin);
+
+  pingInterval = setInterval(()=>{
+    socket.ping()
+  }, 2 * 1000)
 
   try {
     const sessionId = uuidv1();
@@ -73,6 +77,10 @@ wss.on('connection', async (socket, request) => {
   socket.once('close', () => {
     console.log('socket::close [sessionId:%s]', socket.sessionId);
 
+    if (pingInterval) {
+      clearInterval(pingInterval);
+      pingInterval = undefined;
+    }
     const peer = peers.get(socket.sessionId);
 
     if (peer && peer.process) {
@@ -278,6 +286,7 @@ const startRecord = async (peer, screenId) => {
 
   peer.process = getProcess(recordInfo);
 
+/*
   setTimeout(async () => {
     for (const consumer of peer.consumers) {
       // Sometimes the consumer gets resumed before the GStreamer process has fully started
@@ -285,7 +294,17 @@ const startRecord = async (peer, screenId) => {
       await consumer.resume();
       await consumer.requestKeyFrame();
     }
-  }, 1000);
+  }, 1000); */
+  const interval = setInterval(async ()=>{
+    for (const consumer of peer.consumers) {
+      //  request key frame every 1 second.
+      await consumer.resume();
+      await consumer.requestKeyFrame();
+    }
+    if (!peer.process){
+      clearInterval(interval)
+    }
+  }, 1000)
 };
 
 // Returns process command to use (GStreamer/FFmpeg) default is FFmpeg

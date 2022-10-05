@@ -2,6 +2,9 @@
 
 const os = require('os');
 
+const announcedIp='vrc.jp';
+//const announcedIp='localhost';
+
 module.exports = Object.freeze({
   numWorkers: Object.keys(os.cpus()).length,
   worker: {
@@ -80,14 +83,14 @@ module.exports = Object.freeze({
     ]
   },
   webRtcTransport: {
-    listenIps: [ { ip: '0.0.0.0', announcedIp: 'binaural.me' } ], // TODO: Change announcedIp to your external IP or domain name
+    listenIps: [ { ip: '0.0.0.0', announcedIp} ], // TODO: Change announcedIp to your external IP or domain name
     enableUdp: true,
     enableTcp: true,
     preferUdp: true,
     maxIncomingBitrate: 1500000
   },
   plainTransport: {
-    listenIp: { ip: '0.0.0.0', announcedIp: 'binaural.me' }, // TODO: Change announcedIp to your external IP or domain name
+    listenIp: { ip: '0.0.0.0', announcedIp}, // TODO: Change announcedIp to your external IP or domain name
     rtcpMux: true,
     comedia: false
   }
