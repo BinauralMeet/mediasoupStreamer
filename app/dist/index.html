@@ -3,13 +3,26 @@
   <head>
     <meta charset="utf-8"/>
     <title>Mediasoup Record Demo</title>
+    <style>
+      body, input, button {
+        font-size:1.2em;
+      }
+    </style>
   </head>
 
   <body>
-    Screen ID: <input id="screenIdInput" value="1" size="40">
-    <br/>
+    <h1> VRC screen sharing</h1>
+    ScreenID: <input id="screenIdInput" value="1" size="30">
+    <br/><br/>
     <button id="startRecordButton" onclick="Lib.startRecord()">Start Streaming</button>
     <button id="stopRecordButton" onclick="Lib.stopRecord()" disabled>Stop Streaming</button>
+    <hr />
+    <h3>Usage:</h3>
+    <ol>
+      <li> Input random/unique ScreenID above.</li>
+      <li> Press "Start streaming" button.</li>
+     <li> Open <strong>rtspt://vrc.jp/{ScreenID}</strong> in Media player in VRChat.<br>
+    </ol>
   </body>
 
   <script>
