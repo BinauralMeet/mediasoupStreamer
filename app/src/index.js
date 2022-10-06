@@ -119,7 +119,19 @@ const handleCreateTransportRequest = async (jsonMessage) => {
 
     // Set the transport listeners and get the users media stream
     handleSendTransportListeners();
-    getMediaStream().then(()=>{
+    let fps = Number(document.getElementById('fps').value);
+    fps = Number.isInteger(fps) ? fps : undefined;
+    document.getElementById('fps').value = fps
+    
+    let w = Number(document.getElementById('width').value);
+    w = Number.isInteger(w) ? w : undefined;
+    document.getElementById('width').value = w
+    
+    let h = Number(document.getElementById('height').value);
+    h = Number.isInteger(h) ? h : undefined;
+    document.getElementById('height').value = h
+    
+    getMediaStream(fps,w,h).then(()=>{
       recordStep2();
     });
   } catch (error) {
@@ -136,10 +148,14 @@ const handleSendTransportListeners = () => {
   });
 };
 
-const getMediaStream = async () => {
-  const mediaStream = await GUM();
+const getMediaStream = async (fps,w,h) => {
+  const mediaStream = await GUM(fps,w,h);
   const videoNode = document.getElementById('localVideo');
   if(videoNode){ videoNode.srcObject = mediaStream; }
+/*  const video = document.createElement('video');
+  video.srcObject = mediaStream;
+  video.style.transform = 'scaleY(-1)';
+  mediaStream = video.captureStream();*/
 
   // Get the video and audio tracks from the media stream
   const videoTrack = mediaStream.getVideoTracks()[0];
@@ -147,8 +163,10 @@ const getMediaStream = async () => {
 
   // If there is a video track start sending it to the server
   if (videoTrack) {
+    let bitrate = Number(document.getElementById('bitrate').value) * 1000*1000;
+    bitrate = Number.isFinite(bitrate) ? Math.floor(bitrate) : 1500*1000;
     const videoProducer = await peer.sendTransport.produce({ track: videoTrack,
-      encodings: [{maxBitrate:1500000}]
+      encodings: [{maxBitrate: bitrate}]
      });
     peer.producers.push(videoProducer);
   }
@@ -161,6 +179,9 @@ const getMediaStream = async () => {
 
   // Enable the start record button
   document.getElementById('startRecordButton').disabled = false;
+  document.getElementById('fps').disabled = true;
+  document.getElementById('width').disabled = true;
+  document.getElementById('height').disabled = true;
 };
 
 const handleConnectTransportRequest = async (jsonMessage) => {

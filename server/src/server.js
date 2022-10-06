@@ -304,7 +304,7 @@ const startRecord = async (peer, screenId) => {
     if (!peer.process){
       clearInterval(interval)
     }
-  }, 1000)
+  }, 10*1000)
 };
 
 // Returns process command to use (GStreamer/FFmpeg) default is FFmpeg
