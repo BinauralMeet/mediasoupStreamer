@@ -82,8 +82,8 @@ module.exports = class FFmpeg {
       'pipe:0'
     ];
 
-    //commandArgs = commandArgs.concat(this._videoArgs);
-    //commandArgs = commandArgs.concat(this._audioArgs);
+    commandArgs = commandArgs.concat(this._videoArgs);
+    commandArgs = commandArgs.concat(this._audioArgs);
 
     commandArgs = commandArgs.concat([
       '-flags',
@@ -95,8 +95,8 @@ module.exports = class FFmpeg {
 //	'-b:v', '1.3M',
 //	'-maxrate', '1.3M',
 //	'-bufsize', '0.2M',
-	'-vcodec', 'copy',
-	'-acodec', 'copy',
+//	'-vcodec', 'copy',
+//	'-acodec', 'copy',
 //      '-f', 'flv',
 //      `rtmp://localhost/${this._rtpParameters.fileName}`
       '-f', 'rtsp',

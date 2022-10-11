@@ -171,6 +171,7 @@ function createUpsideDown(mediaStream,fps, w, h){
   video.width = w;
   video.height = h;
   video.autoplay = true;
+  video.volume = 0;
   
   video.srcObject = mediaStream;
   const canvas = document.createElement('canvas');
