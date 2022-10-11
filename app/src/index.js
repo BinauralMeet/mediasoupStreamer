@@ -6,19 +6,27 @@ const SocketQueue = require('./queue');
 
 const mediasoupConfig = require('../../server/src/config');
 
-let peer;
-const queue = new SocketQueue();
-
-let socket
+const queues = [new SocketQueue(), new SocketQueue()];
+const sockets = []
+const peers = [undefined, undefined]
+function getPeer(socket){
+  const idx = sockets.findIndex(s => s===socket)
+  return peers[idx]
+}
+function getQueue(socket){
+  const idx = sockets.findIndex(s => s===socket)
+  console.log(`queue ${idx} is used. ${JSON.stringify(sockets)}`)
+  return queues[idx]
+}
 
 const handleSocketOpen = async () => {
   console.log('handleSocketOpen()');
 };
 
-const handleSocketMessage = async (message) => {
+const handleSocketMessage = async (message, socket) => {
   try {
     const jsonMessage = JSON.parse(message.data);
-    handleJsonMessage(jsonMessage);
+    handleJsonMessage(jsonMessage, socket);
   } catch (error) {
     console.error('handleSocketMessage() failed [error:%o]', error);
   }
@@ -57,45 +65,52 @@ const handleSocketError = error => {
   console.error('handleSocketError() [error:%o]', error);
 };
 
-const handleJsonMessage = async (jsonMessage) => {
+const handleJsonMessage = async (jsonMessage, socket) => {
   const { action } = jsonMessage;
 
   switch (action) {
     case 'router-rtp-capabilities':
-      handleRouterRtpCapabilitiesRequest(jsonMessage);
+      handleRouterRtpCapabilitiesRequest(jsonMessage, socket);
       break;
     case 'create-transport':
-      handleCreateTransportRequest(jsonMessage);
+      handleCreateTransportRequest(jsonMessage, socket);
       break;
     case 'connect-transport':
-      handleConnectTransportRequest(jsonMessage);
+      handleConnectTransportRequest(jsonMessage, socket);
       break;
     case 'produce':
-      handleProduceRequest(jsonMessage);
+      handleProduceRequest(jsonMessage, socket);
       break;
     default: console.log('handleJsonMessage() unknown action %s', action);
   }
 };
 
-const handleRouterRtpCapabilitiesRequest = async (jsonMessage) => {
+let device;
+const handleRouterRtpCapabilitiesRequest = async (jsonMessage, socket) => {
   const { routerRtpCapabilities, sessionId } = jsonMessage;
   console.log('handleRouterRtpCapabilities() [rtpCapabilities:%o]', routerRtpCapabilities);
+  console.log(`sessionID: ${sessionId}`);
 
   try {
-    const device = new mediasoup.Device();
-    // Load the mediasoup device with the router rtp capabilities gotten from the server
-    await device.load({ routerRtpCapabilities });
-
-    peer = new Peer(sessionId, device);
-    createTransport();
+    if (!device){
+      device = new mediasoup.Device();
+      // Load the mediasoup device with the router rtp capabilities gotten from the server
+      await device.load({ routerRtpCapabilities });
+    }
+    const idx = sockets.findIndex((s) => s === socket)
+    if (!peers[idx]){
+      peers[idx] = new Peer(sessionId, device);
+    }
+    createTransport(socket);
   } catch (error) {
     console.error('handleRouterRtpCapabilities() failed to init device [error:%o]', error);
     socket.close();
   }
 };
 
-const createTransport = () => {
+const createTransport = (socket) => {
   console.log('createTransport()');
+  const peer = getPeer(socket)
 
   if (!peer || !peer.device.loaded) {
     throw new Error('Peer or device is not initialized');
@@ -109,8 +124,9 @@ const createTransport = () => {
 };
 
 // Mediasoup Transport on the server side has been created
-const handleCreateTransportRequest = async (jsonMessage) => {
+const handleCreateTransportRequest = async (jsonMessage, socket) => {
   console.log('handleCreateTransportRequest() [data:%o]', jsonMessage);
+  const peer = getPeer(socket)
 
   try {
     // Create the local mediasoup send transport
@@ -118,7 +134,7 @@ const handleCreateTransportRequest = async (jsonMessage) => {
     console.log('handleCreateTransportRequest() send transport created [id:%s]', peer.sendTransport.id);
 
     // Set the transport listeners and get the users media stream
-    handleSendTransportListeners();
+    handleSendTransportListeners(socket);
     let fps = Number(document.getElementById('fps').value);
     fps = Number.isInteger(fps) ? fps : undefined;
     document.getElementById('fps').value = fps
@@ -131,8 +147,8 @@ const handleCreateTransportRequest = async (jsonMessage) => {
     h = Number.isInteger(h) ? h : undefined;
     document.getElementById('height').value = h
     
-    getMediaStream(fps,w,h).then(()=>{
-      recordStep2();
+    getMediaStream(socket, fps,w,h).then(()=>{
+      recordStep2(socket);
     });
   } catch (error) {
     console.error('handleCreateTransportRequest() failed to create transport [error:%o]', error);
@@ -140,23 +156,35 @@ const handleCreateTransportRequest = async (jsonMessage) => {
   }
 };
 
-const handleSendTransportListeners = () => {
-  peer.sendTransport.on('connect', handleTransportConnectEvent);
-  peer.sendTransport.on('produce', handleTransportProduceEvent);
+const handleSendTransportListeners = (socket) => {
+  const peer = getPeer(socket)
+
+  peer.sendTransport.on('connect', (...args) => {handleTransportConnectEvent(socket, ...args)});
+  peer.sendTransport.on('produce', (...args) => {handleTransportProduceEvent(socket, ...args)});
   peer.sendTransport.on('connectionstatechange', connectionState => {
     console.log('send transport connection state change [state:%s]', connectionState);
   });
 };
 
-const getMediaStream = async (fps,w,h) => {
-  const mediaStream = await GUM(fps,w,h);
-  const videoNode = document.getElementById('localVideo');
-  if(videoNode){ videoNode.srcObject = mediaStream; }
-/*  const video = document.createElement('video');
+function createUpsideDown(mediaStream,fps, w, h){
+  const video = document.createElement('video');
+  video.width = w;
+  video.height = h;
+  video.autoplay = true;
+  
   video.srcObject = mediaStream;
-  video.style.transform = 'scaleY(-1)';
-  mediaStream = video.captureStream();*/
-
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.translate(0, h);
+  ctx.scale(1,-1);
+  setInterval(()=>{
+    ctx.drawImage(video, 0, 0);
+  },1000/fps)
+  return canvas.captureStream(fps);  
+}
+async function createProducer(mediaStream, peer){
   // Get the video and audio tracks from the media stream
   const videoTrack = mediaStream.getVideoTracks()[0];
   const audioTrack = mediaStream.getAudioTracks()[0];
@@ -176,16 +204,56 @@ const getMediaStream = async (fps,w,h) => {
     const audioProducer = await peer.sendTransport.produce({ track: audioTrack });
     peer.producers.push(audioProducer);
   }
+}
 
-  // Enable the start record button
-  document.getElementById('startRecordButton').disabled = false;
+let mediaStream;
+let mediaStreamUd;
+let resolveForUd;
+let peerForUd;
+const getMediaStream = (socket, fps,w,h) => {
+  const promise = new Promise((resolve, reject) => {
+    const peer = getPeer(socket)
+    if (socket === sockets[0]){
+      GUM(fps, w, h).then((ms)=>{
+        mediaStream = ms;
+        createProducer(mediaStream, peer).then(()=>{
+          resolve();
+          if (resolveForUd){
+            setTimeout(()=>{
+              mediaStreamUd = createUpsideDown(mediaStream, fps, w, h);
+              createProducer(mediaStreamUd, peerForUd).then(()=>{
+                resolveForUd();
+              })  
+            }, 1000);
+          }
+        })
+      })
+    }else{
+      if (!mediaStream){
+        resolveForUd = resolve;
+        peerForUd = peer
+      }else{
+        mediaStreamUd = createUpsideDown(mediaStream, fps, w, h)
+        const videoNode = document.getElementById('localVideo');
+        if(videoNode){ videoNode.srcObject = mediaStreamUd; }
+        createProducer(mediaStreamUd, peer).then(()=>{
+          resolve();
+        })
+      }
+    }
+  });
+
+  // Disable the start record button
+  document.getElementById('startRecordButton').disabled = true;
   document.getElementById('fps').disabled = true;
   document.getElementById('width').disabled = true;
-  document.getElementById('height').disabled = true;
+  document.getElementById('height').disabled = true;  
+  return promise;
 };
 
-const handleConnectTransportRequest = async (jsonMessage) => {
+const handleConnectTransportRequest = async (jsonMessage, socket) => {
   console.log('handleTransportConnectRequest()');
+  const queue = getQueue(socket);
   try {
     const action = queue.get('connect-transport');
 
@@ -199,8 +267,9 @@ const handleConnectTransportRequest = async (jsonMessage) => {
   }
 };
 
-const handleProduceRequest = async (jsonMessage) => {
+const handleProduceRequest = async (jsonMessage, socket) => {
   console.log('handleProduceRequest()');
+  const queue = getQueue(socket);
   try {
     const action = queue.get('produce');
 
@@ -214,8 +283,11 @@ const handleProduceRequest = async (jsonMessage) => {
   }
 };
 
-const handleTransportConnectEvent = ({ dtlsParameters }, callback, errback) => {
+const handleTransportConnectEvent = (socket, { dtlsParameters }, callback, errback) => {
   console.log('handleTransportConnectEvent()');
+  const peer = getPeer(socket)
+  const queue = getQueue(socket);
+
   try {
     const action = (jsonMessage) => {
       console.log('connect-transport action');
@@ -237,8 +309,11 @@ const handleTransportConnectEvent = ({ dtlsParameters }, callback, errback) => {
   }
 };
 
-const handleTransportProduceEvent = ({ kind, rtpParameters }, callback, errback) => {
+const handleTransportProduceEvent = (socket, { kind, rtpParameters }, callback, errback) => {
   console.log('handleTransportProduceEvent()');
+  const peer = getPeer(socket)
+  const queue = getQueue(socket);
+
   try {
     const action = jsonMessage => {
       console.log('handleTransportProduceEvent callback [data:%o]', jsonMessage);
@@ -261,8 +336,12 @@ const handleTransportProduceEvent = ({ kind, rtpParameters }, callback, errback)
   }
 };
 
-function recordStep2(){
-  const screenId = document.getElementById('screenIdInput').value;
+function recordStep2(socket){
+  const peer = getPeer(socket)
+  let screenId = document.getElementById('screenIdInput').value;
+  if (socket !== sockets[0]){
+    screenId = `${screenId}d`;
+  }
   console.log(`screenId: ${screenId}`)
   socket.send(JSON.stringify({
     action: 'start-record',
@@ -275,25 +354,35 @@ function recordStep2(){
 }
 module.exports.startRecord = () => {
   console.log('startRecord()');
-  if (!socket){
-    socket = new WebSocket('wss://vrc.jp/msstreamer');
-    //socket = new WebSocket('ws://localhost:3030');
-    socket.addEventListener('open', handleSocketOpen);
-    socket.addEventListener('message', handleSocketMessage);
-    socket.addEventListener('error', handleSocketError);
-    socket.addEventListener('close', handleSocketClose);  
+  if (sockets.length === 0){
+    for(let i=0; i<2; ++i){
+      setTimeout(()=>{
+        //socket = new WebSocket('ws://localhost:3030');
+        const socket = new WebSocket('wss://vrc.jp/msstreamer');
+        socket.id = i;
+        sockets.push(socket);
+
+        socket.addEventListener('open', handleSocketOpen);
+        socket.addEventListener('message', (msg) => {handleSocketMessage(msg, socket)});
+        socket.addEventListener('error', handleSocketError);
+        socket.addEventListener('close', handleSocketClose);  
+      }, i*1000)
+    }
   }else{
-    recordStep2()
+    sockets.forEach(socket=>{
+      recordStep2(socket)
+    });
   }
 };
 
 module.exports.stopRecord = () => {
   console.log('stopRecord()');
-
-  socket.send(JSON.stringify({
-    action: 'stop-record',
-    sessionId: peer.sessionId
-  }));
+  for(let i=0; i<sockets.length; ++i){
+    sockets[i].send(JSON.stringify({
+      action: 'stop-record',
+      sessionId: peers[i].sessionId
+    }));
+  }
 
   document.getElementById('startRecordButton').disabled = false;
   document.getElementById('stopRecordButton').disabled = true;

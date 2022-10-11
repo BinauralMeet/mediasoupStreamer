@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8"/>
-    <title>Mediasoup Record Demo</title>
+    <title>VRC Screen Sharing</title>
     <style>
       body, input, button {
         font-size:1.2em;
@@ -11,7 +11,7 @@
   </head>
 
   <body>
-    <h1> VRC screen sharing</h1>
+    <h1> VRC Screen Sharing</h1>
     ScreenID: <input id="screenIdInput" value="1" size="30">
     <br/><br/>
     <button id="startRecordButton" onclick="Lib.startRecord()">Start Streaming</button>
@@ -29,10 +29,8 @@
     Width: <input id="width" value="1280" size="4">px &nbsp;&nbsp;&nbsp;
     Height: <input id="height" value="720" size="4">px <br>
     Bitrate: <input id="bitrate" value="1.5" size="4">MBPS
+    <!-- <video id="localVideo" autoplay muted playsinline width="640" height="480" /> -->
   </body>
 
-  <script>
-    window.localStorage.setItem('debug', 'mediasoup-client:*');
-  </script>
   <script src="main.js"></script>
 </html>

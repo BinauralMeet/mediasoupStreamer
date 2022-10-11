@@ -41,6 +41,7 @@ wss.on('connection', async (socket, request) => {
     const sessionId = uuidv1();
     socket.sessionId = sessionId;
     const peer = new Peer(sessionId);
+    console.log(`new Peer(${sessionId})`)
     peers.set(sessionId, peer);
 
     const message = JSON.stringify({
@@ -283,6 +284,8 @@ const startRecord = async (peer, screenId) => {
   }
 
   recordInfo.fileName = screenId;//Date.now().toString();
+
+  console.log(`startRecord info:${JSON.stringify(recordInfo)}`)
 
   peer.process = getProcess(recordInfo);
 

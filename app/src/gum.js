@@ -2,7 +2,7 @@
 // Gets the users camera and returns the media stream
 module.exports.GUM = async (fps, w, h) => {
   const constrants = Object.freeze({
-    audio: false, 
+    audio: true,
     video: {
       width: w ? {max: w} : undefined,
       height: h ? {max: h} : undefined,

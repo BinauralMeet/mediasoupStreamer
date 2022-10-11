@@ -20,6 +20,12 @@ module.exports = Object.freeze({
   router: {
     mediaCodecs: [
       {
+        kind: 'audio',
+        mimeType: 'audio/opus',
+        clockRate: 48000,
+        channels: 2
+      },
+      {
         kind                 : 'audio',
         mimeType             : 'audio/PCMU',
         preferredPayloadType : 0,
@@ -39,13 +45,7 @@ module.exports = Object.freeze({
           { type: 'transport-cc' }
         ]
       },
-/*      
-      {
-        kind: 'audio',
-        mimeType: 'audio/opus',
-        clockRate: 48000,
-        channels: 2
-      },
+      /*
       {
         kind: 'audio',
         mimeType: 'audio/aac',
