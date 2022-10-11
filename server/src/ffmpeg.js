@@ -89,18 +89,15 @@ module.exports = class FFmpeg {
       '-flags',
       '+global_header',
       //hase//  `${RECORD_FILE_LOCATION_PATH}/${this._rtpParameters.fileName}.webm`
-//	'-c:v', 'libx264',
-//	'-x264-params', 'keyint=90:scenecut=0',
-//	'-c:a', 'aac',
+//	'-c:v', 'libx264', '-x264-params', 'keyint=90:scenecut=0',
 //	'-b:v', '1.3M',
+//	'-c:a', 'aac',
 //	'-maxrate', '1.3M',
 //	'-bufsize', '0.2M',
 //	'-vcodec', 'copy',
 //	'-acodec', 'copy',
-//      '-f', 'flv',
-//      `rtmp://localhost/${this._rtpParameters.fileName}`
-      '-f', 'rtsp',
-      `rtsp://localhost/${this._rtpParameters.fileName}`
+//        '-f', 'flv', `rtmp://localhost/${this._rtpParameters.fileName}`
+      '-f', 'rtsp', `rtsp://localhost/${this._rtpParameters.fileName}`
     ]);
 
     console.log('commandArgs:%o', commandArgs);
@@ -124,7 +121,8 @@ module.exports = class FFmpeg {
       '-strict', // libvorbis is experimental
       '-2',
       '-c:a',
-      'copy'
+//      'copy'
+      'aac'
     ];
   }
 }

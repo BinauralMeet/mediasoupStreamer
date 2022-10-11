@@ -212,7 +212,7 @@ const handleStopRecordRequest = async (jsonMessage) => {
 };
 
 const publishProducerRtpStream = async (peer, producer, ffmpegRtpCapabilities) => {
-  console.log('publishProducerRtpStream()');
+  console.log(`publishProducerRtpStream(${producer.kind})`);
 
   // Create the mediasoup RTP Transport used to send media to the GStreamer process
   const rtpTransportConfig = config.plainTransport;
@@ -285,7 +285,7 @@ const startRecord = async (peer, screenId) => {
 
   recordInfo.fileName = screenId;//Date.now().toString();
 
-  console.log(`startRecord info:${JSON.stringify(recordInfo)}`)
+//    console.log(`startRecord info:${JSON.stringify(recordInfo)}`);
 
   peer.process = getProcess(recordInfo);
 

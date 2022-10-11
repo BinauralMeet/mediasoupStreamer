@@ -17,11 +17,11 @@ module.exports.createSdpText = (rtpParameters) => {
   t=0 0
   m=video ${video.remoteRtpPort} RTP/AVP ${videoCodecInfo.payloadType} 
   a=rtpmap:${videoCodecInfo.payloadType} ${videoCodecInfo.codecName}/${videoCodecInfo.clockRate}
-  a=sendonly
-`
-  audio && `
-  m=audio ${audio.remoteRtpPort} RTP/AVP ${audioCodecInfo.payloadType} 
+  a=sendonly` + 
+    
+    (audio && `
+m=audio ${audio.remoteRtpPort} RTP/AVP ${audioCodecInfo.payloadType} 
   a=rtpmap:${audioCodecInfo.payloadType} ${audioCodecInfo.codecName}/${audioCodecInfo.clockRate}/${audioCodecInfo.channels}
   a=sendonly
-  `;
+  `);
 };
