@@ -170,10 +170,10 @@ function createUpsideDown(mediaStream,fps, w, h){
   const video = document.createElement('video');
   video.width = w;
   video.height = h;
-  video.autoplay = true;
-  video.volume = 0;
-  
-  video.srcObject = mediaStream;
+  video.autoplay = true;  
+  const msVideo = new MediaStream();
+  msVideo.addTrack(mediaStream.getVideoTracks()[0]);
+  video.srcObject = msVideo;
   const canvas = document.createElement('canvas');
   canvas.width = w;
   canvas.height = h;
@@ -183,7 +183,9 @@ function createUpsideDown(mediaStream,fps, w, h){
   setInterval(()=>{
     ctx.drawImage(video, 0, 0);
   },1000/fps)
-  return canvas.captureStream(fps);  
+  const rv = canvas.captureStream(fps);
+  rv.addTrack(mediaStream.getAudioTracks()[0]);
+  return rv;
 }
 async function createProducer(mediaStream, peer){
   // Get the video and audio tracks from the media stream
