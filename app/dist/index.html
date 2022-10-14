@@ -12,11 +12,15 @@
 
   <body>
     <h1> VRC Screen Sharing</h1>
-    ScreenID: <input id="screenIdInput" value="1" size="30">
+    Notice: Shared video and audio will be streamed publicly without any password or encryption. Anyone who knows the ScreenID can see and hear. 
+    <hr />
+    ScreenID: <input id="screenIdInput" value="a" size="30">
+    &nbsp; Channel: <input id="screenIdAssigned" value="" size="8" readonly="true">
     <br/><br/>
     <button id="startRecordButton" onclick="Lib.startRecord()">Start Streaming</button>
     <button id="stopRecordButton" onclick="Lib.stopRecord()" disabled>Stop Streaming</button>
     <hr />
+    <!--
     <h3>Usage:</h3>
     <ol>
       <li> Input random/unique ScreenID above.</li>
@@ -24,6 +28,7 @@
       <li> Open <strong>rtspt://vrc.jp/<i>ScreenID</i></strong> by media players in VRChat worlds.<br>
     </ol>
     <hr />
+    -->
     <h3>Options:</h3>
     &nbsp;&nbsp;Frame rate: <input id="fps" value="30" size="4">fps &nbsp;&nbsp;&nbsp;
     Width: <input id="width" value="1280" size="4">px &nbsp;&nbsp;&nbsp;

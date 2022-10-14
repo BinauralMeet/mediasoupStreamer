@@ -98,6 +98,9 @@ const handleJsonMessage = async (jsonMessage, socket) => {
     case 'produce':
       handleProduceRequest(jsonMessage, socket);
       break;
+    case 'screenId':
+      handleScreenId(jsonMessage, socket);
+      break;
     default: console.log('handleJsonMessage() unknown action %s', action);
   }
 };
@@ -303,6 +306,14 @@ const handleProduceRequest = async (jsonMessage, socket) => {
   }
 };
 
+const handleScreenId = (jsonMessage, socket) => {
+  if (socket === sockets[0]){
+    const base = document.getElementById('screenIdInput').value
+    const channel = jsonMessage.screenId.substring(base.length);
+    document.getElementById('screenIdAssigned').value = channel;  
+  }
+}
+
 const handleTransportConnectEvent = (socket, { dtlsParameters }, callback, errback) => {
   console.log('handleTransportConnectEvent()');
   const peer = getPeer(socket)
@@ -377,7 +388,7 @@ module.exports.startRecord = () => {
   if (sockets.length === 0){
     for(let i=0; i<2; ++i){
       setTimeout(()=>{
-        //socket = new WebSocket('ws://localhost:3030');
+        //const socket = new WebSocket('ws://localhost:3030');
         const socket = new WebSocket('wss://vrc.jp/msstreamer');
         socket.id = i;
         sockets.push(socket);

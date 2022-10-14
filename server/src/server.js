@@ -176,6 +176,8 @@ const handleProduceRequest = async (jsonMessage) => {
   };
 };
 
+const screenIds = new Set();
+
 const handleStartRecordRequest = async (jsonMessage) => {
   console.log('handleStartRecordRequest() [data:%o]', jsonMessage);
   const peer = peers.get(jsonMessage.sessionId);
@@ -184,10 +186,18 @@ const handleStartRecordRequest = async (jsonMessage) => {
     throw new Error(`Peer with id ${jsonMessage.sessionId} was not found`);
   }
 
-  const screenId = jsonMessage.screenId;
+  const screenIdBase = jsonMessage.screenId;
+  let screenId = '';
+  for(let i=0; i<100; ++i){
+    screenId = screenIdBase + i;
+    if (!screenIds.has(screenId)){
+      screenIds.add(screenId);
+      break;
+    }
+  }
   console.log(`screenId = ${screenId}`)
 
-  startRecord(peer, screenId);
+  return startRecord(peer, screenId);
 };
 
 const handleStopRecordRequest = async (jsonMessage) => {
@@ -306,8 +316,14 @@ const startRecord = async (peer, screenId) => {
     }
     if (!peer.process){
       clearInterval(interval)
+      screenIds.delete(screenId);
     }
   }, 3*1000)
+
+  return {
+    action: 'screenId',
+    screenId
+  };
 };
 
 // Returns process command to use (GStreamer/FFmpeg) default is FFmpeg
