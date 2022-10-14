@@ -87,7 +87,6 @@ wss.on('connection', async (socket, request) => {
     if (peer && peer.process) {
       peer.process.kill();
       peer.process = undefined;
-      screenIds.delete(peer.screenId);
     }
   });
 });
@@ -192,14 +191,13 @@ const handleStartRecordRequest = async (jsonMessage) => {
   for(let i=0; i<100; ++i){
     screenId = screenIdBase + i;
     if (!screenIds.has(screenId)){
-      peer.screenId = screenId;
-      screenIds.add(peer.screenId);
+      screenIds.add(screenId);
       break;
     }
   }
-  console.log(`screenId = ${peer.screenId}`)
+  console.log(`screenId = ${screenId}`)
 
-  return startRecord(peer);
+  return startRecord(peer, screenId);
 };
 
 const handleStopRecordRequest = async (jsonMessage) => {
@@ -288,18 +286,20 @@ const publishProducerRtpStream = async (peer, producer, ffmpegRtpCapabilities) =
   };
 };
 
-const startRecord = async (peer) => {
+const startRecord = async (peer, screenId) => {
   let recordInfo = {};
 
   for (const producer of peer.producers) {
     recordInfo[producer.kind] = await publishProducerRtpStream(peer, producer);
   }
-  const screenId = peer.screenId;
   recordInfo.fileName = screenId;//Date.now().toString();
 
 //    console.log(`startRecord info:${JSON.stringify(recordInfo)}`);
 
   peer.process = getProcess(recordInfo);
+  peer.process.on('process-close', () => {
+    screenIds.delete(screenId);
+  })
 
 /*
   setTimeout(async () => {
@@ -324,7 +324,7 @@ const startRecord = async (peer) => {
 
   return {
     action: 'screenId',
-    screenId: peer.screenId
+    screenId: screenId
   };
 };
 
