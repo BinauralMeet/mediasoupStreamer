@@ -192,12 +192,12 @@ const handleStartRecordRequest = async (jsonMessage) => {
   for(let i=0; i<100; ++i){
     screenId = screenIdBase + i;
     if (!screenIds.has(screenId)){
-      screenIds.add(screenId);
+      peer.screenId = screenId;
+      screenIds.add(peer.screenId);
       break;
     }
-    peer.screenId = screenId;
   }
-  console.log(`screenId = ${screenId}`)
+  console.log(`screenId = ${peer.screenId}`)
 
   return startRecord(peer);
 };
