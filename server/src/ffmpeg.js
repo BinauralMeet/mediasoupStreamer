@@ -82,10 +82,10 @@ module.exports = class FFmpeg {
       'pipe:0'
     ];
 
-    if (_rtpParameters['video']){
+    if (this._rtpParameters['video']){
       commandArgs = commandArgs.concat(this._videoArgs);
     }
-    if (_rtpParameters['audio']){
+    if (this._rtpParameters['audio']){
       commandArgs = commandArgs.concat(this._audioArgs);
     }
 
