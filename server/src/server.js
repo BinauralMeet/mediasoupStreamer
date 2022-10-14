@@ -324,7 +324,7 @@ const startRecord = async (peer) => {
 
   return {
     action: 'screenId',
-    screenId
+    screenId: peer.screenId
   };
 };
 
