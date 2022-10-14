@@ -294,8 +294,8 @@ const startRecord = async (peer) => {
   for (const producer of peer.producers) {
     recordInfo[producer.kind] = await publishProducerRtpStream(peer, producer);
   }
-
-  recordInfo.fileName = peer.screenId;//Date.now().toString();
+  const screenId = peer.screenId;
+  recordInfo.fileName = screenId;//Date.now().toString();
 
 //    console.log(`startRecord info:${JSON.stringify(recordInfo)}`);
 
@@ -318,7 +318,7 @@ const startRecord = async (peer) => {
     }
     if (!peer.process){
       clearInterval(interval)
-      screenIds.delete(peer.screenId);
+      screenIds.delete(screenId);
     }
   }, 3*1000)
 
