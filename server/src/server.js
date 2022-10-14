@@ -297,7 +297,7 @@ const startRecord = async (peer, screenId) => {
 //    console.log(`startRecord info:${JSON.stringify(recordInfo)}`);
 
   peer.process = getProcess(recordInfo);
-  peer.process.on('process-close', () => {
+  peer.process._observer.on('process-close', () => {
     screenIds.delete(screenId);
   })
 
@@ -324,7 +324,7 @@ const startRecord = async (peer, screenId) => {
 
   return {
     action: 'screenId',
-    screenId: screenId
+    screenId
   };
 };
 
