@@ -82,8 +82,12 @@ module.exports = class FFmpeg {
       'pipe:0'
     ];
 
-    commandArgs = commandArgs.concat(this._videoArgs);
-    commandArgs = commandArgs.concat(this._audioArgs);
+    if (_rtpParameters['video']){
+      commandArgs = commandArgs.concat(this._videoArgs);
+    }
+    if (_rtpParameters['audio']){
+      commandArgs = commandArgs.concat(this._audioArgs);
+    }
 
     commandArgs = commandArgs.concat([
       '-flags',
