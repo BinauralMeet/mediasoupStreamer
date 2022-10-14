@@ -87,6 +87,7 @@ wss.on('connection', async (socket, request) => {
     if (peer && peer.process) {
       peer.process.kill();
       peer.process = undefined;
+      screenIds.delete(peer.screenId);
     }
   });
 });
@@ -194,10 +195,11 @@ const handleStartRecordRequest = async (jsonMessage) => {
       screenIds.add(screenId);
       break;
     }
+    peer.screenId = screenId;
   }
   console.log(`screenId = ${screenId}`)
 
-  return startRecord(peer, screenId);
+  return startRecord(peer);
 };
 
 const handleStopRecordRequest = async (jsonMessage) => {
@@ -286,14 +288,14 @@ const publishProducerRtpStream = async (peer, producer, ffmpegRtpCapabilities) =
   };
 };
 
-const startRecord = async (peer, screenId) => {
+const startRecord = async (peer) => {
   let recordInfo = {};
 
   for (const producer of peer.producers) {
     recordInfo[producer.kind] = await publishProducerRtpStream(peer, producer);
   }
 
-  recordInfo.fileName = screenId;//Date.now().toString();
+  recordInfo.fileName = peer.screenId;//Date.now().toString();
 
 //    console.log(`startRecord info:${JSON.stringify(recordInfo)}`);
 
@@ -316,7 +318,7 @@ const startRecord = async (peer, screenId) => {
     }
     if (!peer.process){
       clearInterval(interval)
-      screenIds.delete(screenId);
+      screenIds.delete(peer.screenId);
     }
   }, 3*1000)
 

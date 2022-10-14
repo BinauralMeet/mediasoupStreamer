@@ -204,7 +204,9 @@ function createUpsideDown(mediaStream,fps, w, h){
     ctx.drawImage(video, 0, 0);
   },1000/fps)
   const rv = canvas.captureStream(fps);
-  rv.addTrack(mediaStream.getAudioTracks()[0]);
+  if (mediaStream.getAudioTracks().length){
+    rv.addTrack(mediaStream.getAudioTracks()[0]);
+  }
   return rv;
 }
 async function createProducer(mediaStream, peer){
