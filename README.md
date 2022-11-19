@@ -1,3 +1,7 @@
+# Simple modified for VRChat screen shareing
+See https://scrapbox.io/binaural-meet/VRChat%E7%94%A8RTSP_server
+
+----
 # Simple video/audio Record Demo Using mediasoup 3 and GStreamer/FFmpeg
 
 ---
